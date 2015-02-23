@@ -28,4 +28,4 @@ Time spent: 6 Hours
 
 ### Walkthrough
 
-![Video Walkthrough](...)
+![Video Walkthrough](http://cdn.makeagif.com/media/2-23-2015/VpyIQz.gif)
