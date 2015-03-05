@@ -8,12 +8,30 @@
 
 import UIKit
 
-class NewTweetViewController: UIViewController {
+class NewTweetViewController: UIViewController, UITextViewDelegate {
+    @IBOutlet weak var profileImage: UIImageView!
+    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var usernameLabel: UILabel!
+    @IBOutlet weak var inputField: UITextView!
+    @IBOutlet weak var spinner: UIActivityIndicatorView!
+    var replyId: String?
+    
+    @IBOutlet weak var navBar: UINavigationBar!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        let url = NSURL(string: User.currentUser!.profileImageURL!)
+        profileImage.setImageWithURL(url)
+        nameLabel.text = User.currentUser?.name
+        usernameLabel.text = User.currentUser?.screenname
+        
+        inputField.delegate = self
+        inputField.becomeFirstResponder()
+        
+        var removeButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Cancel, target: self, action: "dismissSelf")
+        navigationItem.rightBarButtonItem = removeButton
     }
 
     override func didReceiveMemoryWarning() {
@@ -21,15 +39,29 @@ class NewTweetViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    func textView(textView: UITextView!, shouldChangeTextInRange: NSRange, replacementText: NSString!) -> Bool {
+        if(replacementText == "\n") {
+            textView.resignFirstResponder()
+            spinner.startAnimating()
+            var params = ["status": textView.text]
+            if (replyId != nil) {
+                params["replyId"] = replyId!
+            }
+            TwitterClient.sharedInstance.updateStatus(params, completion: {
+                (error: NSError?) -> Void in
+                if error == nil {
+                    self.navigationController?.popViewControllerAnimated(true)
+                    self.dismissViewControllerAnimated(true, completion: nil)
+                } else {
+                    println("ERROR POSTING")
+                }
+            })
+            return false
+        }
+        return true
     }
-    */
-
+    
+    func dismissSelf() {
+        dismissViewControllerAnimated(true, completion: nil)
+    }
 }
